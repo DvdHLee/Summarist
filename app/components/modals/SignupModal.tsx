@@ -1,10 +1,14 @@
 'use client'
 
 import Modal from '@mui/material/Modal'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { RxCross2 } from "react-icons/rx";
 import { closeModal, openLoginModal } from '@/redux/modalSlice';
+import { createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/firebase';
+import { setUser } from '@/redux/userSlice';
+import { FirebaseError } from 'firebase/app';
 
 function SignupModal() {
 
@@ -13,10 +17,34 @@ function SignupModal() {
     
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState([""]);
 
     async function handleSignup() {
-        
+        try {
+            const userCredentials = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            )
+        } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                setError([error.code])
+            }
+         }
     }
+
+    //Logged in listener
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (!currentUser) return
+
+            dispatch(setUser({
+                email: currentUser.email
+            }))
+        })
+
+        return unsubscribe
+    })
 
     async function clickedOpenLogin() {
         dispatch(openLoginModal());
@@ -28,6 +56,9 @@ function SignupModal() {
                 <div className='w-[90%] h-fit bg-white md:w-[400px] rounded-lg flex flex-col items-center outline-none relative'>
                     <div className='flex flex-col items-center pt-[48px] px-[32px] pb-[24px] w-full'>
                         <h2 className='text-[#032b41] text-xl font-bold mb-[24px]'>Sign in to Summarist</h2>
+                        <div className='mb-3 text-red-500'>
+                            {error}
+                        </div>
                         <button className='flex bg-[#4285f4] h-10 relative text-white w-full rounded justify-center items-center hover:bg-[#3367d6] cursor-not-allowed'>
                             <h2 className='text-[16px]'>Signup with Google</h2>
                             <div className='flex absolute items-center justify-center w-[36px] h-[36px] left-[2px] bg-white rounded'>

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState: any = {
-  modalOpen: "signup"
+  modalOpen: "none"
 };
 
 const modalSlice = createSlice({

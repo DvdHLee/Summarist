@@ -6,6 +6,9 @@ import { BiSolidUser } from 'react-icons/bi'
 import { useDispatch, useSelector } from 'react-redux';
 import { RxCross2 } from "react-icons/rx";
 import { closeModal, openSignupModal } from '@/redux/modalSlice';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase';
+import { FirebaseError } from 'firebase/app';
 
 function LoginModal() {
 
@@ -14,9 +17,20 @@ function LoginModal() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState([""]);
 
     async function handleLogin() {
-        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                setError([error.code])
+            }
+         }
+    }
+
+    async function handleGuestLogin() {
+        await signInWithEmailAndPassword(auth, "guest36158@gmail.com", "f9j2HJ4kl");
     }
 
     function clickedOpenSignup() {
@@ -31,7 +45,10 @@ function LoginModal() {
                 <div className='w-[90%] h-fit bg-white md:w-[400px] rounded-lg flex flex-col items-center outline-none relative'>
                     <div className='flex flex-col items-center pt-[48px] px-[32px] pb-[24px] w-full'>
                         <h2 className='text-[#032b41] text-xl font-bold mb-[24px]'>Log in to Summarist</h2>
-                        <button className='flex bg-[#3a579d] h-10 relative text-white w-full rounded justify-center items-center hover:bg-[#25396b]'>
+                        <div className='mb-3 text-red-500'>
+                            {error}
+                        </div>
+                        <button className='flex bg-[#3a579d] h-10 relative text-white w-full rounded justify-center items-center hover:bg-[#25396b]' onClick={handleGuestLogin}>
                             <h2 className='text-[16px]'>Login as a Guest</h2>
                             <BiSolidUser className='flex absolute items-center justify-center w-[36px] h-[36px] left-[2px]'/>
                         </button>
